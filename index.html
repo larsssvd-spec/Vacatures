@@ -78,7 +78,8 @@
     }
     .card:active { cursor: grabbing; }
     .card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-    .card-function { font-size: 13px; color: #555; margin-bottom: 8px; font-weight: 500; }
+    .card-function { font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+    .card-note { font-size: 12px; color: #777; margin-bottom: 8px; line-height: 1.5; white-space: pre-wrap; border-top: 1px solid #f0f0f0; padding-top: 6px; margin-top: 4px; }
     .card-actions { display: none; gap: 6px; }
     .card:hover .card-actions { display: flex; }
     .card-btn {
@@ -100,7 +101,7 @@
     #modal-overlay.open { display: flex; }
     #modal {
       background: #fff; border-radius: 14px; padding: 28px 24px;
-      width: 420px; max-width: 95vw;
+      width: 680px; max-width: 95vw;
       box-shadow: 0 8px 40px rgba(0,0,0,0.2);
     }
     #modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
@@ -196,6 +197,10 @@
         <div class="status-opt red" data-s="red" onclick="pickStatus('red')">Rood</div>
       </div>
     </div>
+    <div class="field" style="margin-top:14px">
+      <label>Notities</label>
+      <textarea id="f-note" placeholder="Contactpersoon, afspraken, details over het bedrijf..." style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;outline:none;resize:vertical;min-height:260px;"></textarea>
+    </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeModal()">Annuleren</button>
       <button class="btn-primary" onclick="saveCard()">Opslaan</button>
@@ -261,6 +266,7 @@ function makeCard(key, card) {
   div.innerHTML = `
     <div class="card-name">${esc(card.name)}</div>
     ${card.func ? `<div class="card-function">${esc(card.func)}</div>` : ''}
+    ${card.note ? `<div class="card-note">${esc(card.note)}</div>` : ''}
     <div class="card-actions">
       <button class="card-btn" onclick="editCard('${key}')">Bewerken</button>
       <button class="card-btn del" onclick="deleteCard('${key}')">Verwijderen</button>
@@ -315,6 +321,7 @@ window.openModal = function() {
   document.getElementById('modal-title').textContent = 'Vacature toevoegen';
   document.getElementById('f-name').value = '';
   document.getElementById('f-function').value = '';
+  document.getElementById('f-note').value = '';
   pickStatus('green');
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('f-name').focus();
@@ -336,6 +343,7 @@ window.saveCard = async function() {
   const card = {
     name,
     func: document.getElementById('f-function').value.trim(),
+    note: document.getElementById('f-note').value.trim(),
     status: selectedStatus,
     ts: Date.now(),
     order: Date.now()
@@ -359,6 +367,7 @@ window.editCard = function(key) {
   document.getElementById('modal-title').textContent = 'Vacature bewerken';
   document.getElementById('f-name').value = card.name || '';
   document.getElementById('f-function').value = card.func || '';
+  document.getElementById('f-note').value = card.note || '';
   pickStatus(card.status || 'green');
   document.getElementById('modal-overlay').classList.add('open');
 };
