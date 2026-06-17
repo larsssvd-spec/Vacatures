@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vacatures Kerkrade</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2Y5NzMxNiIvPjx0ZXh0IHg9IjE2IiB5PSIyMyIgZm9udC1mYW1pbHk9InN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VjwvdGV4dD48L3N2Zz4=">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f0f0f0; color: #111; min-height: 100vh; }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      gap: 12px;
+    }
+    header h1 { font-size: 16px; font-weight: 700; white-space: nowrap; }
+    #search {
+      flex: 1; max-width: 340px;
+      padding: 7px 12px;
+      border: 1px solid #ddd; border-radius: 20px;
+      font-size: 13px; outline: none;
+    }
+    #search:focus { border-color: #888; }
+    #add-btn {
+      padding: 8px 16px; background: #2563eb; color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    #add-btn:hover { background: #1d4ed8; }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      padding: 12px;
+      width: 100%;
+    }
+
+    .column {
+      background: #e8e8e8;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: calc(100vh - 110px);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    #col-green { border: 2px solid #16a34a; background: #f0fdf4; }
+    #col-orange { border: 2px solid #f97316; background: #fff7ed; }
+    #col-red { border: 2px solid #dc2626; background: #fef2f2; }
+
+    .col-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px; padding: 0 2px;
+    }
+    .col-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .col-title { font-size: 13px; font-weight: 700; }
+    .col-count {
+      margin-left: auto; background: #fff;
+      border-radius: 10px; padding: 2px 8px;
+      font-size: 12px; font-weight: 600; color: #555;
+    }
+    .cards { flex: 1; min-height: 60px; }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ccc;
+      cursor: grab;
+    }
+    .card:active { cursor: grabbing; }
+    .card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .card-function { font-size: 13px; color: #555; margin-bottom: 8px; font-weight: 500; }
+    .card-actions { display: none; gap: 6px; }
+    .card:hover .card-actions { display: flex; }
+    .card-btn {
+      background: none; border: 1px solid #ddd; border-radius: 5px;
+      font-size: 11px; padding: 3px 8px; cursor: pointer; color: #555;
+    }
+    .card-btn:hover { background: #f5f5f5; }
+    .card-btn.del { color: #dc2626; border-color: #fca5a5; }
+    .card-btn.del:hover { background: #fef2f2; }
+
+    .sortable-ghost { opacity: 0.25; background: #dbeafe; border-radius: 8px; }
+    .sortable-chosen { box-shadow: 0 6px 24px rgba(0,0,0,0.15); }
+
+    #modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 200;
+      align-items: center; justify-content: center;
+    }
+    #modal-overlay.open { display: flex; }
+    #modal {
+      background: #fff; border-radius: 14px; padding: 28px 24px;
+      width: 420px; max-width: 95vw;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    #modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+    .field input {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid #ddd; border-radius: 8px;
+      font-size: 14px; font-family: inherit; outline: none;
+    }
+    .field input:focus { border-color: #2563eb; }
+    .status-row { display: flex; gap: 8px; }
+    .status-opt {
+      flex: 1; padding: 10px 8px; border-radius: 8px; border: 2px solid transparent;
+      text-align: center; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .status-opt.green { background: #dcfce7; color: #166534; }
+    .status-opt.orange { background: #ffedd5; color: #9a3412; }
+    .status-opt.red { background: #fee2e2; color: #991b1b; }
+    .status-opt.selected { border-color: #111; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-primary {
+      flex: 1; padding: 11px; background: #2563eb; color: #fff;
+      border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+      padding: 11px 18px; background: none; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 14px; cursor: pointer; color: #555;
+    }
+
+    #status-bar { text-align: center; font-size: 12px; color: #888; padding: 6px; }
+
+    @media (max-width: 700px) {
+      #board { grid-template-columns: 1fr; }
+      header h1 { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Vacatures Kerkrade</h1>
+  <input id="search" type="text" placeholder="Zoek vacature, bedrijf..." oninput="filterCards()"/>
+  <button id="add-btn" onclick="openModal()">+ Vacature toevoegen</button>
+</header>
+
+<div id="status-bar">Verbinden...</div>
+
+<div id="board">
+  <div class="column" id="col-green">
+    <div class="col-header">
+      <div class="col-dot" style="background:#16a34a"></div>
+      <span class="col-title">Groene vacatures</span>
+      <span class="col-count" id="count-green">0</span>
+    </div>
+    <div class="cards" id="cards-green"></div>
+  </div>
+  <div class="column" id="col-orange">
+    <div class="col-header">
+      <div class="col-dot" style="background:#f97316"></div>
+      <span class="col-title">Oranje vacatures</span>
+      <span class="col-count" id="count-orange">0</span>
+    </div>
+    <div class="cards" id="cards-orange"></div>
+  </div>
+  <div class="column" id="col-red">
+    <div class="col-header">
+      <div class="col-dot" style="background:#dc2626"></div>
+      <span class="col-title">Rode vacatures</span>
+      <span class="col-count" id="count-red">0</span>
+    </div>
+    <div class="cards" id="cards-red"></div>
+  </div>
+</div>
+
+<div id="modal-overlay">
+  <div id="modal">
+    <h2 id="modal-title">Vacature toevoegen</h2>
+    <div class="field">
+      <label>Bedrijfsnaam *</label>
+      <input id="f-name" type="text" placeholder="bijv. Eagle Simrax"/>
+    </div>
+    <div class="field">
+      <label>Naam functie</label>
+      <input id="f-function" type="text" placeholder="bijv. Magazijnmedewerker"/>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <div class="status-row">
+        <div class="status-opt green selected" data-s="green" onclick="pickStatus('green')">Groen</div>
+        <div class="status-opt orange" data-s="orange" onclick="pickStatus('orange')">Oranje</div>
+        <div class="status-opt red" data-s="red" onclick="pickStatus('red')">Rood</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal()">Annuleren</button>
+      <button class="btn-primary" onclick="saveCard()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCmu23C7iiuQGZo8ZYBc3bh7Q9-QCWljaY",
+  authDomain: "vacatures-kerkrade-434.firebaseapp.com",
+  databaseURL: "https://vacatures-kerkrade-434-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "vacatures-kerkrade-434",
+  storageBucket: "vacatures-kerkrade-434.firebasestorage.app",
+  messagingSenderId: "4213431115",
+  appId: "1:4213431115:web:f09551039e3807e16d66ce"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let selectedStatus = 'green';
+let editKey = null;
+let allCards = {};
+let sortables = {};
+
+// Firebase listener
+onValue(ref(db, 'vacatures'), snap => {
+  allCards = {};
+  snap.forEach(c => { allCards[c.key] = c.val(); });
+  renderAll();
+  document.getElementById('status-bar').textContent = '🟢 Verbonden — wijzigingen zijn direct zichtbaar voor iedereen';
+});
+
+function renderAll() {
+  const q = document.getElementById('search').value.toLowerCase();
+  ['green','orange','red'].forEach(col => {
+    const el = document.getElementById('cards-' + col);
+    el.innerHTML = '';
+    let count = 0;
+    const sorted = Object.entries(allCards)
+      .filter(([k,c]) => c.status === col)
+      .sort((a,b) => (a[1].order ?? a[1].ts ?? 0) - (b[1].order ?? b[1].ts ?? 0));
+    sorted.forEach(([key, card]) => {
+      if (q && !(card.name||'').toLowerCase().includes(q) && !(card.func||'').toLowerCase().includes(q)) return;
+      count++;
+      el.appendChild(makeCard(key, card));
+    });
+    document.getElementById('count-' + col).textContent = count;
+  });
+  initSortable();
+}
+
+function makeCard(key, card) {
+  const borderColor = card.status === 'green' ? '#16a34a' : card.status === 'orange' ? '#f97316' : '#dc2626';
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.borderLeftColor = borderColor;
+  div.dataset.key = key;
+  div.innerHTML = `
+    <div class="card-name">${esc(card.name)}</div>
+    ${card.func ? `<div class="card-function">${esc(card.func)}</div>` : ''}
+    <div class="card-actions">
+      <button class="card-btn" onclick="editCard('${key}')">Bewerken</button>
+      <button class="card-btn del" onclick="deleteCard('${key}')">Verwijderen</button>
+    </div>
+  `;
+  return div;
+}
+
+function initSortable() {
+  ['green','orange','red'].forEach(status => {
+    const el = document.getElementById('cards-' + status);
+    if (sortables[status]) sortables[status].destroy();
+    sortables[status] = new Sortable(el, {
+      group: 'vacatures',
+      animation: 180,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      delay: 0,
+      onEnd(evt) {
+        const movedKey = evt.item.dataset.key;
+        const newStatus = evt.to.id.replace('cards-', '');
+        const updates = [];
+
+        // If moved to different column, update status
+        if (evt.from !== evt.to) {
+          update(ref(db, 'vacatures/' + movedKey), { status: newStatus });
+        }
+
+        // Update order for all cards in destination column
+        [...evt.to.children].forEach((card, i) => {
+          updates.push(update(ref(db, 'vacatures/' + card.dataset.key), { order: i * 1000 }));
+        });
+
+        // Also reorder source column if different
+        if (evt.from !== evt.to) {
+          [...evt.from.children].forEach((card, i) => {
+            updates.push(update(ref(db, 'vacatures/' + card.dataset.key), { order: i * 1000 }));
+          });
+        }
+      }
+    });
+  });
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+window.openModal = function() {
+  editKey = null;
+  document.getElementById('modal-title').textContent = 'Vacature toevoegen';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-function').value = '';
+  pickStatus('green');
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('f-name').focus();
+};
+
+window.closeModal = function() {
+  document.getElementById('modal-overlay').classList.remove('open');
+};
+
+window.pickStatus = function(s) {
+  selectedStatus = s;
+  document.querySelectorAll('.status-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelector(`.status-opt[data-s="${s}"]`).classList.add('selected');
+};
+
+window.saveCard = async function() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+  const card = {
+    name,
+    func: document.getElementById('f-function').value.trim(),
+    status: selectedStatus,
+    ts: Date.now(),
+    order: Date.now()
+  };
+  if (editKey) {
+    await update(ref(db, 'vacatures/' + editKey), card);
+  } else {
+    await push(ref(db, 'vacatures'), card);
+  }
+  closeModal();
+};
+
+window.deleteCard = function(key) {
+  if (confirm('Vacature verwijderen?')) remove(ref(db, 'vacatures/' + key));
+};
+
+window.editCard = function(key) {
+  const card = allCards[key];
+  if (!card) return;
+  editKey = key;
+  document.getElementById('modal-title').textContent = 'Vacature bewerken';
+  document.getElementById('f-name').value = card.name || '';
+  document.getElementById('f-function').value = card.func || '';
+  pickStatus(card.status || 'green');
+  document.getElementById('modal-overlay').classList.add('open');
+};
+
+window.filterCards = renderAll;
+
+document.getElementById('modal-overlay').onclick = e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+};
+</script>
+</body>
+</html>
