@@ -266,7 +266,6 @@ function makeCard(key, card) {
   div.innerHTML = `
     <div class="card-name">${esc(card.name)}</div>
     ${card.func ? `<div class="card-function">${esc(card.func)}</div>` : ''}
-    ${card.note ? `<div class="card-note">${esc(card.note)}</div>` : ''}
     <div class="card-actions">
       <button class="card-btn" onclick="editCard('${key}')">Bewerken</button>
       <button class="card-btn del" onclick="deleteCard('${key}')">Verwijderen</button>
@@ -374,9 +373,9 @@ window.editCard = function(key) {
 
 window.filterCards = renderAll;
 
-document.getElementById('modal-overlay').onclick = e => {
+document.getElementById('modal-overlay').addEventListener('mousedown', e => {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
-};
+});
 </script>
 </body>
 </html>
